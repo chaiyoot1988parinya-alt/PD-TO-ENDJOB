@@ -86,9 +86,10 @@ document.getElementById("scanJobBtn").addEventListener("click", () => {
     { fps: 10, qrbox: { width: 250, height: 250 } },
     (decodedText) => {
       qrJob.stop();
+      // ✅ เอาเฉพาะก่อน ||
       const jobNo = decodedText.split("||")[0].trim();
       document.getElementById("jobNo").value = jobNo;
-      fetchJobInfo(jobNo);
+      fetchJobInfo(jobNo); // เรียกไปหาใน GAS
     },
     (errorMessage) => { console.log(errorMessage); }
   ).catch(err => alert("เปิดกล้องไม่ได้: " + err));
