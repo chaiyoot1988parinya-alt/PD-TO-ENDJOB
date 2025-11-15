@@ -78,6 +78,27 @@
 <script>
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbyabedrkZGAObVwf1lII-bvCBxCJWlQLjXQaCOjfGXLaff7r9YDN1iVfkvoTE-dp76TDA/exec'; // เปลี่ยนเป็น Script URL ของคุณ
 
+  async function fetchJobDetails(jobNo) {
+    const res = await fetch(GAS_URL, {
+      method: "POST",
+      body: new URLSearchParams({ action:"getRPJob", jobNo })
+    });
+    const data = await res.json();
+    if (!data.ok) {
+      alert(data.msg);
+      return;
+    }
+
+    const row = data.rows[0];
+    document.getElementById("planQty").value = row.planQty;
+    document.getElementById("oper").value = row.oper;
+
+    if (row.staff) document.getElementById("staffCode").value = row.staff;
+    if (row.actualQty) document.getElementById("actualQty").value = row.actualQty;
+    if (row.timestamp) alert("มีการบันทึกไว้แล้วเมื่อ: " + row.timestamp);
+  }
+
+  
 // สแกน JobNo
 document.getElementById("scanJobBtn").addEventListener("click", () => {
   const qrJob = new Html5Qrcode("qr-reader-job");
