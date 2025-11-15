@@ -5,48 +5,20 @@
   <title>บันทึกรายงานการผลิต</title>
   <script src="https://unpkg.com/html5-qrcode"></script>
   <style>
-    body {
-      font-size: 150%;
-      font-family: sans-serif;
-      margin: 10px;
-      padding: 0;
-    }
-    h2 {
-      text-align: center;
-    }
-    button {
-      display: block;
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      font-size: 20px;
-    }
-    .qr-box {
-      width: 100%;
-      max-width: 320px;
-      margin: auto;
-    }
-    .form-group {
-      margin: 10px 0;
-    }
-    label {
-      display: block;
-      margin-bottom: 4px;
-      font-weight: bold;
-    }
-    input, select {
-      width: 100%;
-      padding: 8px;
-      font-size: 30px;
-      box-sizing: border-box;
-    }
+    body { font-size: 150%; font-family: sans-serif; margin: 10px; }
+    h2 { text-align: center; }
+    button { display: block; width: 100%; padding: 12px; margin: 8px 0; font-size: 20px; }
+    .qr-box { width: 100%; max-width: 320px; margin: auto; }
+    .form-group { margin: 10px 0; }
+    label { display: block; margin-bottom: 4px; font-weight: bold; }
+    input, select { width: 100%; padding: 8px; font-size: 30px; box-sizing: border-box; }
   </style>
 </head>
 <body>
   <h2>ระบบรายงานการผลิตปิดจ๊อบ</h2>
 
-<!-- ปุ่มสแกนจ๊อบ -->
-  <button id="scanJobBtn">📷 กดสแกนเลขที่จ๊อบ</button>
+  <!-- ปุ่มสแกน Job -->
+  <button id="scanJobBtn">📷 สแกน QR JobNo.</button>
   <div id="qr-reader-job" class="qr-box"></div>
 
   <div class="form-group">
@@ -58,9 +30,11 @@
     <input id="planQty" readonly>
   </div>
   <div class="form-group">
-  <label>ขั้นตอนการทำงาน (Oper)</label>
-  <select id="operSelect"></select>
-</div>
+    <label>ขั้นตอนการทำงาน (Oper)</label>
+    <select id="operSelect"></select>
+  </div>
+
+  <!-- ปุ่มสแกนพนักงาน -->
   <button id="scanStaffBtn">📷 สแกนพนักงาน</button>
   <div id="qr-reader-staff" class="qr-box"></div>
 
@@ -76,93 +50,72 @@
   <button id="saveBtn">💾 บันทึกรายงานการผลิต</button>
 
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbxSwvLXOcwqrJjhhcfvt54wPVUnu1rDbHy7FQeMrLq1Vsr57MQVxcJgJr_a51ol2_xrDQ/exec'; // เปลี่ยนเป็น Script URL ของคุณ
+const GAS_URL = 'YOUR_SCRIPT_URL'; // เปลี่ยนเป็น Script URL ของคุณ
+let rpRows = []; // เก็บข้อมูลทุกแถวจาก RP
 
-// ✅ ฟังก์ชันเดียวสำหรับดึงข้อมูลจาก RP
+// ✅ ดึงข้อมูลจาก RP ตาม JobNo
 async function fetchJobDetails(jobNo) {
   const res = await fetch(GAS_URL, {
     method: "POST",
     body: new URLSearchParams({ action:"getRPJob", jobNo })
   });
   const data = await res.json();
-  if (!data.ok) {
-    alert(data.msg);
-    return;
-  }
+  if (!data.ok) { alert(data.msg); return; }
 
-  rpRows = data.rows; // เก็บไว้ใช้ตอนเปลี่ยน Oper
+  rpRows = data.rows;
   const operSelect = document.getElementById("operSelect");
-  operSelect.innerHTML = ""; // เคลียร์ก่อน
+  operSelect.innerHTML = "";
 
-  // ✅ สร้างตัวเลือกจากทุก Oper
-  rpRows.forEach((row) => {
+  rpRows.forEach(row => {
     const option = document.createElement("option");
     option.value = row.oper;
     option.textContent = row.oper;
     operSelect.appendChild(option);
   });
 
-  // ✅ แสดงข้อมูลของแถวแรกเป็นค่าเริ่มต้น
   fillRPFields(rpRows[0]);
 }
 
-
-
-// ฟังก์ชันเติมข้อมูลลงฟอร์ม
 function fillRPFields(row) {
   document.getElementById("planQty").value = row.planQty;
   document.getElementById("staffCode").value = row.staff || "";
   document.getElementById("actualQty").value = row.actualQty || "";
-  if (row.timestamp) {
-    alert("มีการบันทึกไว้แล้วเมื่อ: " + row.timestamp);
-  }
+  if (row.timestamp) alert("มีการบันทึกไว้แล้วเมื่อ: " + row.timestamp);
 }
 
-// ✅ เมื่อผู้ใช้เปลี่ยน Oper → อัปเดตข้อมูลตามแถวที่เลือก
 document.getElementById("operSelect").addEventListener("change", () => {
   const selectedOper = document.getElementById("operSelect").value;
   const match = rpRows.find(r => r.oper === selectedOper);
   if (match) fillRPFields(match);
 });
 
-
-  // ✅ ใส่ข้อมูลแถวแรกเป็นค่าเริ่มต้น
-  const first = data.rows[0];
-  document.getElementById("planQty").value = first.planQty;
-  document.getElementById("oper").value = first.oper;
-  if (first.staff) document.getElementById("staffCode").value = first.staff;
-  if (first.actualQty) document.getElementById("actualQty").value = first.actualQty;
-  if (first.timestamp) alert("มีการบันทึกไว้แล้วเมื่อ: " + first.timestamp);
-}
-
-
 // ✅ สแกน JobNo
 document.getElementById("scanJobBtn").addEventListener("click", () => {
   const qrJob = new Html5Qrcode("qr-reader-job");
   qrJob.start(
     { facingMode: "environment" },
-    { fps: 10, qrbox: 250 }, // ใช้แบบง่ายเหมือนหน้าเก่า
+    { fps: 10, qrbox: 250 },
     (decodedText) => {
       qrJob.stop().then(() => {
         const jobNo = decodedText.split("||")[0].trim();
         document.getElementById("jobNo").value = jobNo;
         fetchJobDetails(jobNo);
-      }).catch(err => console.error("หยุดกล้องไม่ได้:", err));
+      });
     },
     (errorMessage) => { console.log(errorMessage); }
   ).catch(err => alert("เปิดกล้องไม่ได้: " + err));
 });
 
-
-// ✅ สแกนพนักงาน
+// ✅ สแกน Staff
 document.getElementById("scanStaffBtn").addEventListener("click", () => {
   const qrStaff = new Html5Qrcode("qr-reader-staff");
   qrStaff.start(
     { facingMode: "environment" },
     { fps: 10, qrbox: 250 },
     (decodedText) => {
-      qrStaff.stop();
-      document.getElementById("staffCode").value = decodedText.split("||")[0].trim(); // เอาเฉพาะก่อน ||
+      qrStaff.stop().then(() => {
+        document.getElementById("staffCode").value = decodedText.split("||")[0].trim();
+      });
     },
     (errorMessage) => { console.log(errorMessage); }
   ).catch(err => alert("เปิดกล้องไม่ได้: " + err));
