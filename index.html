@@ -78,45 +78,7 @@
 <script>
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzcilrqTNJsGcJVMVjphgzOX01uVOYyxC5yskBKyfV0h1M0-miHi1ilf7iVEX7-szxNxQ/exec'; // เปลี่ยนเป็น Script URL ของคุณ
 
-  async function fetchJobDetails(jobNo) {
-    const res = await fetch(GAS_URL, {
-      method: "POST",
-      body: new URLSearchParams({ action:"getRPJob", jobNo })
-    });
-    const data = await res.json();
-    if (!data.ok) {
-      alert(data.msg);
-      return;
-    }
-
-    const row = data.rows[0];
-    document.getElementById("planQty").value = row.planQty;
-    document.getElementById("oper").value = row.oper;
-
-    if (row.staff) document.getElementById("staffCode").value = row.staff;
-    if (row.actualQty) document.getElementById("actualQty").value = row.actualQty;
-    if (row.timestamp) alert("มีการบันทึกไว้แล้วเมื่อ: " + row.timestamp);
-  }
-
-  
-// สแกน JobNo
-document.getElementById("scanJobBtn").addEventListener("click", () => {
-  const qrJob = new Html5Qrcode("qr-reader-job");
-  qrJob.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: { width: 250, height: 250 } },
-    (decodedText) => {
-      qrJob.stop();
-      // ✅ เอาเฉพาะก่อน ||
-      const jobNo = decodedText.split("||")[0].trim();
-      document.getElementById("jobNo").value = jobNo;
-      fetchJobInfo(jobNo); // เรียกไปหาใน GAS
-    },
-    (errorMessage) => { console.log(errorMessage); }
-  ).catch(err => alert("เปิดกล้องไม่ได้: " + err));
-});
-
-// ดึงข้อมูลจาก RP
+// ✅ ฟังก์ชันเดียวสำหรับดึงข้อมูลจาก RP
 async function fetchJobDetails(jobNo) {
   const res = await fetch(GAS_URL, {
     method: "POST",
@@ -127,11 +89,33 @@ async function fetchJobDetails(jobNo) {
     alert(data.msg);
     return;
   }
-  document.getElementById("planQty").value = data.planQty;
-  document.getElementById("oper").value = data.oper;
+
+  const row = data.rows[0];
+  document.getElementById("planQty").value = row.planQty;
+  document.getElementById("oper").value = row.oper;
+
+  if (row.staff) document.getElementById("staffCode").value = row.staff;
+  if (row.actualQty) document.getElementById("actualQty").value = row.actualQty;
+  if (row.timestamp) alert("มีการบันทึกไว้แล้วเมื่อ: " + row.timestamp);
 }
 
-// สแกนพนักงาน
+// ✅ สแกน JobNo
+document.getElementById("scanJobBtn").addEventListener("click", () => {
+  const qrJob = new Html5Qrcode("qr-reader-job");
+  qrJob.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: { width: 250, height: 250 } },
+    (decodedText) => {
+      qrJob.stop();
+      const jobNo = decodedText.split("||")[0].trim(); // เอาเฉพาะก่อน ||
+      document.getElementById("jobNo").value = jobNo;
+      fetchJobDetails(jobNo); // ✅ เรียกฟังก์ชันที่ถูกต้อง
+    },
+    (errorMessage) => { console.log(errorMessage); }
+  ).catch(err => alert("เปิดกล้องไม่ได้: " + err));
+});
+
+// ✅ สแกนพนักงาน
 document.getElementById("scanStaffBtn").addEventListener("click", () => {
   const qrStaff = new Html5Qrcode("qr-reader-staff");
   qrStaff.start(
@@ -139,13 +123,13 @@ document.getElementById("scanStaffBtn").addEventListener("click", () => {
     { fps: 10, qrbox: 250 },
     (decodedText) => {
       qrStaff.stop();
-      document.getElementById("staffCode").value = decodedText.trim();
+      document.getElementById("staffCode").value = decodedText.split("||")[0].trim(); // เอาเฉพาะก่อน ||
     },
     (errorMessage) => { console.log(errorMessage); }
   ).catch(err => alert("เปิดกล้องไม่ได้: " + err));
 });
 
-// บันทึกข้อมูล
+// ✅ บันทึกข้อมูล
 document.getElementById("saveBtn").addEventListener("click", async () => {
   const jobNo = document.getElementById("jobNo").value.trim();
   const oper = document.getElementById("oper").value.trim();
