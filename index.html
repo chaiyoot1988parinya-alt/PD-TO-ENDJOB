@@ -147,7 +147,7 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   const actualQty = document.getElementById("actualQty").value.trim();
   const defectQty = document.getElementById("defectQty").value.trim();
 
-  if (!jobNo || !oper || !staffCode || !actualQty) {
+  if (!jobNo || !oper || !staffCode || !actualQty|| !defectQty) {
     alert("กรุณากรอกข้อมูลให้ครบก่อนบันทึก");
     return;
   }
