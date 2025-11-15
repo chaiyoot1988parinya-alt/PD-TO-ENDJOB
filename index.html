@@ -57,10 +57,9 @@
     <input id="planQty" readonly>
   </div>
   <div class="form-group">
-    <label>ขั้นตอนการทำงาน (Oper)</label>
-    <input id="oper" readonly>
-  </div>
-
+  <label>ขั้นตอนการทำงาน (Oper)</label>
+  <select id="operSelect"></select>
+</div>
   <button id="scanStaffBtn">📷 สแกนพนักงาน</button>
   <div id="qr-reader-staff" class="qr-box"></div>
 
@@ -90,14 +89,25 @@ async function fetchJobDetails(jobNo) {
     return;
   }
 
-  const row = data.rows[0];
-  document.getElementById("planQty").value = row.planQty;
-  document.getElementById("oper").value = row.oper;
+  const operSelect = document.getElementById("operSelect");
+  operSelect.innerHTML = ""; // เคลียร์ก่อน
 
-  if (row.staff) document.getElementById("staffCode").value = row.staff;
-  if (row.actualQty) document.getElementById("actualQty").value = row.actualQty;
-  if (row.timestamp) alert("มีการบันทึกไว้แล้วเมื่อ: " + row.timestamp);
+  data.rows.forEach((row, index) => {
+    const option = document.createElement("option");
+    option.value = row.oper;
+    option.textContent = row.oper;
+    operSelect.appendChild(option);
+  });
+
+  // ✅ ใส่ข้อมูลแถวแรกเป็นค่าเริ่มต้น
+  const first = data.rows[0];
+  document.getElementById("planQty").value = first.planQty;
+  document.getElementById("oper").value = first.oper;
+  if (first.staff) document.getElementById("staffCode").value = first.staff;
+  if (first.actualQty) document.getElementById("actualQty").value = first.actualQty;
+  if (first.timestamp) alert("มีการบันทึกไว้แล้วเมื่อ: " + first.timestamp);
 }
+
 
 // ✅ สแกน JobNo
 document.getElementById("scanJobBtn").addEventListener("click", () => {
