@@ -78,8 +78,6 @@
 const GAS_URL = 'https://script.google.com/macros/s/AKfycby_SSs8E7qTzALg_ohRjoWEoGWGHzDnPeClQyyMOSNeA3m-0RJU4gpfIZP6ziiYKrtGMA/exec'; // เปลี่ยนเป็น Script URL ของคุณ
 
 // ✅ ฟังก์ชันเดียวสำหรับดึงข้อมูลจาก RP
-let rpRows = []; // เก็บข้อมูลทุกแถวจาก RP
-
 async function fetchJobDetails(jobNo) {
   const res = await fetch(GAS_URL, {
     method: "POST",
@@ -106,6 +104,7 @@ async function fetchJobDetails(jobNo) {
   // ✅ แสดงข้อมูลของแถวแรกเป็นค่าเริ่มต้น
   fillRPFields(rpRows[0]);
 }
+
 
 // ฟังก์ชันเติมข้อมูลลงฟอร์ม
 function fillRPFields(row) {
