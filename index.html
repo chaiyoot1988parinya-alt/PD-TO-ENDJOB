@@ -83,12 +83,12 @@ document.getElementById("scanJobBtn").addEventListener("click", () => {
   const qrJob = new Html5Qrcode("qr-reader-job");
   qrJob.start(
     { facingMode: "environment" },
-    { fps: 10, qrbox: 250 },
+    { fps: 10, qrbox: { width: 250, height: 250 } },
     (decodedText) => {
       qrJob.stop();
-      const jobNo = decodedText.trim();
+      const jobNo = decodedText.split("||")[0].trim();
       document.getElementById("jobNo").value = jobNo;
-      fetchJobDetails(jobNo);
+      fetchJobInfo(jobNo);
     },
     (errorMessage) => { console.log(errorMessage); }
   ).catch(err => alert("เปิดกล้องไม่ได้: " + err));
