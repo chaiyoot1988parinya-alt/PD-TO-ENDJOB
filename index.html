@@ -62,16 +62,24 @@ async function fetchJobDetails(jobNo) {
   const data = await res.json();
   if (!data.ok) { alert(data.msg); return; }
 
-  rpRows = data.rows;
   const operSelect = document.getElementById("operSelect");
   operSelect.innerHTML = "";
 
-  rpRows.forEach(row => {
-    const option = document.createElement("option");
-    option.value = row.oper;
-    option.textContent = row.oper;
-    operSelect.appendChild(option);
+  const unrecordedRows = data.rows.filter(row => {
+    const hasTimestamp = row.timestamp && String(row.timestamp).trim() !== "";
+    const hasActualQty = row.actualQty && String(row.actualQty).trim() !== "";
+    return !hasTimestamp && !hasActualQty;
   });
+
+  if (unrecordedRows.length === 0) {
+    alert("ขั้นตอนของจ๊อบนี้ถูกบันทึกครบแล้ว");
+  } else {
+    unrecordedRows.forEach(row => {
+      const option = document.createElement("option");
+      option.value = row.oper;
+      option.textContent = row.oper;
+      operSelect.appendChild(option);
+    });
 
   fillRPFields(rpRows[0]);
 }
