@@ -65,6 +65,7 @@ async function fetchJobDetails(jobNo) {
   const operSelect = document.getElementById("operSelect");
   operSelect.innerHTML = "";
 
+  // กรองเฉพาะแถวที่ยังไม่มี timestamp และ actualQty
   const unrecordedRows = data.rows.filter(row => {
     const hasTimestamp = row.timestamp && String(row.timestamp).trim() !== "";
     const hasActualQty = row.actualQty && String(row.actualQty).trim() !== "";
@@ -81,8 +82,11 @@ async function fetchJobDetails(jobNo) {
       operSelect.appendChild(option);
     });
 
-  fillRPFields(rpRows[0]);
+    // ✅ ใช้แถวแรกที่ยังไม่บันทึก
+    fillRPFields(unrecordedRows[0]);
+  }
 }
+
 
 function fillRPFields(row) {
   document.getElementById("planQty").value = row.planQty;
