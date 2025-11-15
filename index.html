@@ -50,8 +50,8 @@
   <button id="saveBtn">💾 บันทึกรายงานการผลิต</button>
 
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbwvhGtFIV-NQ2JGMAQhJTPUp7BAMzWmtAZc2p6HRndgpOnJWDwoGrDQowrVbABMifjfkg/exec'; // เปลี่ยนเป็น Script URL ของคุณ
-//let rpRows = []; // เก็บข้อมูลทุกแถวจาก RP
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbwvhGtFIV-NQ2JGMAQhJTPUp7BAMzWmtAZc2p6HRndgpOnJWDwoGrDQowrVbABMifjfkg/exec';
+let rpRows = []; // เก็บข้อมูลทุกแถวจาก RP
 
 // ✅ ดึงข้อมูลจาก RP ตาม JobNo
 async function fetchJobDetails(jobNo) {
@@ -72,6 +72,8 @@ async function fetchJobDetails(jobNo) {
     return !hasTimestamp && !hasActualQty;
   });
 
+  rpRows = unrecordedRows; // ✅ เก็บไว้ใช้ตอนเปลี่ยนดรอปดาวน์
+
   if (unrecordedRows.length === 0) {
     alert("ขั้นตอนของจ๊อบนี้ถูกบันทึกครบแล้ว");
   } else {
@@ -87,7 +89,6 @@ async function fetchJobDetails(jobNo) {
   }
 }
 
-
 function fillRPFields(row) {
   document.getElementById("planQty").value = row.planQty;
   document.getElementById("staffCode").value = row.staff || "";
@@ -95,6 +96,7 @@ function fillRPFields(row) {
   if (row.timestamp) alert("มีการบันทึกไว้แล้วเมื่อ: " + row.timestamp);
 }
 
+// ✅ เมื่อเปลี่ยนดรอปดาวน์
 document.getElementById("operSelect").addEventListener("change", () => {
   const selectedOper = document.getElementById("operSelect").value;
   const match = rpRows.find(r => r.oper === selectedOper);
@@ -160,5 +162,6 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   alert(data.msg);
 });
 </script>
+
 </body>
 </html>
