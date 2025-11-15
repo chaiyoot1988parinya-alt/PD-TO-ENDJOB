@@ -141,16 +141,18 @@ document.getElementById("scanJobBtn").addEventListener("click", () => {
   const qrJob = new Html5Qrcode("qr-reader-job");
   qrJob.start(
     { facingMode: "environment" },
-    { fps: 10, qrbox: { width: 250, height: 250 } },
+    { fps: 10, qrbox: 250 }, // ใช้แบบง่ายเหมือนหน้าเก่า
     (decodedText) => {
-      qrJob.stop();
-      const jobNo = decodedText.split("||")[0].trim(); // เอาเฉพาะก่อน ||
-      document.getElementById("jobNo").value = jobNo;
-      fetchJobDetails(jobNo); // ✅ เรียกฟังก์ชันที่ถูกต้อง
+      qrJob.stop().then(() => {
+        const jobNo = decodedText.split("||")[0].trim();
+        document.getElementById("jobNo").value = jobNo;
+        fetchJobDetails(jobNo);
+      }).catch(err => console.error("หยุดกล้องไม่ได้:", err));
     },
     (errorMessage) => { console.log(errorMessage); }
   ).catch(err => alert("เปิดกล้องไม่ได้: " + err));
 });
+
 
 // ✅ สแกนพนักงาน
 document.getElementById("scanStaffBtn").addEventListener("click", () => {
