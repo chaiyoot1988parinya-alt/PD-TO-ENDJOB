@@ -78,6 +78,8 @@
 const GAS_URL = 'https://script.google.com/macros/s/AKfycby_SSs8E7qTzALg_ohRjoWEoGWGHzDnPeClQyyMOSNeA3m-0RJU4gpfIZP6ziiYKrtGMA/exec'; // เปลี่ยนเป็น Script URL ของคุณ
 
 // ✅ ฟังก์ชันเดียวสำหรับดึงข้อมูลจาก RP
+let rpRows = []; // เก็บข้อมูลทุกแถวจาก RP
+
 async function fetchJobDetails(jobNo) {
   const res = await fetch(GAS_URL, {
     method: "POST",
@@ -89,15 +91,39 @@ async function fetchJobDetails(jobNo) {
     return;
   }
 
+  rpRows = data.rows; // เก็บไว้ใช้ตอนเปลี่ยน Oper
   const operSelect = document.getElementById("operSelect");
   operSelect.innerHTML = ""; // เคลียร์ก่อน
 
-  data.rows.forEach((row, index) => {
+  // ✅ สร้างตัวเลือกจากทุก Oper
+  rpRows.forEach((row) => {
     const option = document.createElement("option");
     option.value = row.oper;
     option.textContent = row.oper;
     operSelect.appendChild(option);
   });
+
+  // ✅ แสดงข้อมูลของแถวแรกเป็นค่าเริ่มต้น
+  fillRPFields(rpRows[0]);
+}
+
+// ฟังก์ชันเติมข้อมูลลงฟอร์ม
+function fillRPFields(row) {
+  document.getElementById("planQty").value = row.planQty;
+  document.getElementById("staffCode").value = row.staff || "";
+  document.getElementById("actualQty").value = row.actualQty || "";
+  if (row.timestamp) {
+    alert("มีการบันทึกไว้แล้วเมื่อ: " + row.timestamp);
+  }
+}
+
+// ✅ เมื่อผู้ใช้เปลี่ยน Oper → อัปเดตข้อมูลตามแถวที่เลือก
+document.getElementById("operSelect").addEventListener("change", () => {
+  const selectedOper = document.getElementById("operSelect").value;
+  const match = rpRows.find(r => r.oper === selectedOper);
+  if (match) fillRPFields(match);
+});
+
 
   // ✅ ใส่ข้อมูลแถวแรกเป็นค่าเริ่มต้น
   const first = data.rows[0];
@@ -142,7 +168,7 @@ document.getElementById("scanStaffBtn").addEventListener("click", () => {
 // ✅ บันทึกข้อมูล
 document.getElementById("saveBtn").addEventListener("click", async () => {
   const jobNo = document.getElementById("jobNo").value.trim();
-  const oper = document.getElementById("oper").value.trim();
+  const oper = document.getElementById("operSelect").value;
   const staffCode = document.getElementById("staffCode").value.trim();
   const actualQty = document.getElementById("actualQty").value.trim();
 
