@@ -43,14 +43,18 @@
     <input id="staffCode" readonly>
   </div>
   <div class="form-group">
-    <label>จำนวนที่ผลิตได้จริง</label>
+    <label>จำนวนงานดี</label>
     <input id="actualQty" type="number">
   </div>
+  <div class="form-group">
+  <label>จำนวนงานเสีย</label>
+  <input id="defectQty" type="number">
+</div>
 
   <button id="saveBtn">💾 บันทึกรายงานการผลิต</button>
 
 <script>
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbwvhGtFIV-NQ2JGMAQhJTPUp7BAMzWmtAZc2p6HRndgpOnJWDwoGrDQowrVbABMifjfkg/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbxZgLvyCnt_VKA1sfXU5OhfndgvUL4m0xsm6ig2mJiZPLmiYDThwTPk7Sk6bZyuDz9QPg/exec';
 let rpRows = []; // เก็บข้อมูลทุกแถวจาก RP
 
 // ✅ ดึงข้อมูลจาก RP ตาม JobNo
@@ -141,6 +145,7 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
   const oper = document.getElementById("operSelect").value;
   const staffCode = document.getElementById("staffCode").value.trim();
   const actualQty = document.getElementById("actualQty").value.trim();
+  const defectQty = document.getElementById("defectQty").value.trim();
 
   if (!jobNo || !oper || !staffCode || !actualQty) {
     alert("กรุณากรอกข้อมูลให้ครบก่อนบันทึก");
@@ -154,7 +159,8 @@ document.getElementById("saveBtn").addEventListener("click", async () => {
       jobNo,
       oper,
       staffCode,
-      actualQty
+      actualQty,
+      defectQty
     })
   });
 
