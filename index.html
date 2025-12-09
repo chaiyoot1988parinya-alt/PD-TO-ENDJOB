@@ -1,11 +1,20 @@
-
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>รายงานการเริ่มการผลิตตามใบสั่งงาน</title>
-<style> body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f4f4; } .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); } h2 { text-align: center; color: #333; } .form-group { margin-bottom: 15px; } label { display: block; margin-bottom: 5px; font-weight: bold; } input[type="text"], input[type="number"], select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; /* สำคัญสำหรับมือถือ */ font-size: 16px; } button { width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 18px; margin-top: 10px; } button:hover { background-color: #0056b3; } /* สำหรับช่องที่แสดงผลอย่างเดียว */ .display-field { background-color: #eee; } </style>
+<style> 
+    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f4f4; } 
+    .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); } 
+    h2 { text-align: center; color: #333; } 
+    .form-group { margin-bottom: 15px; } 
+    label { display: block; margin-bottom: 5px; font-weight: bold; } 
+    input[type="text"], input[type="number"], select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; } 
+    button { width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 18px; margin-top: 10px; } 
+    button:hover { background-color: #0056b3; } 
+    .display-field { background-color: #eee; } 
+</style>
 
 </head>
 <body>
@@ -16,7 +25,7 @@
                 <label for="jobOrder">1. เลขที่จ๊อบ (အလုပ်အမိန့်):</label>
                 <input type="text" id="jobOrder" name="jobOrder" list="jobOrders" required>
                 <datalist id="jobOrders">
-                    </datalist>
+                </datalist>
                 <button type="button" id="scanJobBtn">สแกนคิวอาร์โค๊ต</button>
                 <div id="scannerJob" style="width:300px; margin:auto; display:none;"></div>
             </div>
@@ -28,14 +37,14 @@
 
             <div class="form-group">
                 <label for="requiredQty">3. จำนวนที่ต้องผลิต (လိုအပ်သော အရေအတွက်):</label>
-                <input type="number" id="requiredQty" name="requiredQty" class="display-field" readonly>
+                <input type="text" id="requiredQty" name="requiredQty" class="display-field" readonly>
             </div>
 
             <div class="form-group">
                 <label for="productionStep">4. ขั้นตอนการทำงาน (လုပ်ငန်းစဉ်):</label>
                 <select id="productionStep" name="productionStep" required>
-                    <option value="">-- กรุณาเลือกขั้นตอนလုပ်ငန်းစဉ်ရွေးချယ်မှု ကျေးဇူးပြု၍ --</option>
-                    </select>
+                    <option value="">-- ကျေးဇူးပြု၍ လုပ်ငန်းစဉ်ကို ရွေးချယ်ပါ --</option> 
+                </select>
             </div>
             
             <div class="form-group">
@@ -46,267 +55,275 @@
             <div class="form-group">
                 <label for="machineUsed">6. เครื่องจักรที่ใช้ผลิต (Machine):</label>
                 <input type="text" id="machineUsed" name="machineUsed" required>
-                <!-- ปุ่มสแกน QR สำหรับเครื่องจัก -->
-                <button type="button" id="scanMachineBtn" style="margin-top:10px;">สแกนเครื่องจัก</button>
+                <button type="button" id="scanMachineBtn" style="margin-top:10px;">สแกนเครื่องจักร</button>
                 <div id="scannerMachine" style="width:300px; margin:auto; display:none;"></div>
-
             </div>
 
             <button type="submit" id="submitBtn">บันทึกข้อมูล(ကယ်တင်ပါ)</button>
-           
-
         </form>
         <p id="responseMessage" style="text-align: center; margin-top: 15px;"></p>
     </div>
+    
     <script src="https://unpkg.com/html5-qrcode"></script>
-   <script>
-    document.getElementById("scanMachineBtn").addEventListener("click", function() {
-    const scannerDiv = document.getElementById("scannerMachine");
-    scannerDiv.style.display = "block";
 
-    const html5QrCode = new Html5Qrcode("scannerMachine");
-    html5QrCode.start(
-        { facingMode: "environment" }, // ใช้กล้องหลัง
-        {
-            fps: 10,
-            qrbox: 250
-        },
-        (decodedText, decodedResult) => {
-            // ✅ ใส่ค่าที่สแกนได้ลงในช่อง machineUsed
-            document.getElementById("machineUsed").value = decodedText;
+    <script>
+        const form = document.getElementById('productionReportForm');
+        const jobOrderInput = document.getElementById('jobOrder');
+        const jobOrdersDatalist = document.getElementById('jobOrders');
+        const productionStepSelect = document.getElementById('productionStep');
+        const responseMessage = document.getElementById('responseMessage');
+        const workCodeInput = document.getElementById('workCode');
+        const requiredQtyInput = document.getElementById('requiredQty');
+        const operInput = document.getElementById('oper');
+        const machineUsedInput = document.getElementById('machineUsed');
 
-            // ปิดกล้องหลังสแกนเสร็จ
-            html5QrCode.stop();
-            scannerDiv.style.display = "none";
-        },
-        (errorMessage) => {
-            console.log("Scanning error:", errorMessage);
+        // ฟังก์ชันช่วยแสดงข้อความสถานะ
+        function showStatus(message, color) {
+            responseMessage.textContent = message;
+            responseMessage.style.color = color;
         }
-     );
-  });
-</script>
-<!-- โหลดไลบรารี -->
-<script src="https://unpkg.com/html5-qrcode"></script>
-<script>
-document.getElementById("scanJobBtn").addEventListener("click", function() {
-    const scannerDiv = document.getElementById("scannerJob");
-    scannerDiv.style.display = "block";
 
-    const html5QrCode = new Html5Qrcode("scannerJob");
-    html5QrCode.start(
-        { facingMode: "environment" },   // ใช้กล้องหลัง
-        { fps: 10, qrbox: 250 },
-        (decodedText) => {
-            // ✅ ดึงค่าที่สแกนได้
-            const jobNo = decodedText.split("||")[0].trim();
-
-            // ใส่ค่าในช่อง jobOrder
-            document.getElementById("jobOrder").value = jobNo;
-
-            // ปิดกล้องหลังสแกนเสร็จ
-            html5QrCode.stop();
-            scannerDiv.style.display = "none";
-        },
-        (errorMessage) => {
-            console.log("Scanning error:", errorMessage);
+        // ฟังก์ชัน Trigger Event 'change'
+        function triggerChangeEvent(element) {
+            const event = new Event('change');
+            element.dispatchEvent(event);
         }
-    ).catch(err => {
-        alert("❌ ไม่สามารถเปิดกล้องได้: " + err);
-    });
-});
-</script>
-<script>
-    const APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw7HiysCfjZ1CDQFufU7fBGpcN_Q_6Xd0xwwYb8_poufu-nlUiAfPhPcalKOd9FW59E/exec'; 
 
-    const form = document.getElementById('productionReportForm');
-    const jobOrderInput = document.getElementById('jobOrder');
-    const jobOrdersDatalist = document.getElementById('jobOrders');
-    const productionStepSelect = document.getElementById('productionStep');
-    const responseMessage = document.getElementById('responseMessage');
-    const workCodeInput = document.getElementById('workCode');
-    const requiredQtyInput = document.getElementById('requiredQty');
-    const operInput = document.getElementById('oper');
-    const machineUsedInput = document.getElementById('machineUsed');
+        // ===========================================================
+        // ส่วนของการสแกน QR Code
+        // ===========================================================
 
-    // ฟังก์ชันช่วยตรวจสอบ response สำหรับ GET Requests
-    async function handleResponse(response) {
-        if (!response.ok) {
-            let errorText = await response.text();
-            throw new Error(`HTTP error! status: ${response.status}. Details: ${errorText.substring(0, 100)}...`);
-        }
-        try {
-            return await response.json();
-        } catch (e) {
-            console.error('Failed to parse JSON response:', e);
-            throw new Error('Response received was not valid JSON.');
-        }
-    }
+        // 1. สแกนเครื่องจักร (Machine)
+        document.getElementById("scanMachineBtn").addEventListener("click", function() {
+            const scannerDiv = document.getElementById("scannerMachine");
+            scannerDiv.style.display = "block";
 
-    // ฟังก์ชันแสดงข้อความสถานะ
-    function showStatus(message, color) {
-        responseMessage.textContent = message;
-        responseMessage.style.color = color;
-    }
-
-    // -----------------------------------------------------------
-    // GET: โหลด Job Orders
-    // -----------------------------------------------------------
-    async function loadJobOrders() {
-        showStatus('กำลังโหลด Job Orders...', 'blue');
-        try {
-            const response = await fetch(APP_SCRIPT_URL + '?action=getJobOrders');
-            const data = await handleResponse(response);
-
-            if (data.error) {
-                console.error('Apps Script Error:', data.error);
-                showStatus('❌ ไม่สามารถโหลด Job Orders ได้', 'red');
-                return;
-            }
-
-            jobOrdersDatalist.innerHTML = '';
-            data.jobs.forEach(job => {
-                const option = document.createElement('option');
-                option.value = job;
-                jobOrdersDatalist.appendChild(option);
-            });
-            showStatus('Job Orders โหลดสมบูรณ์', 'initial');
-        } catch (error) {
-            console.error('Error fetching job orders:', error);
-            showStatus('❌ ไม่สามารถเชื่อมต่อเพื่อโหลด Job Orders', 'red');
-        }
-    }
-
-    // -----------------------------------------------------------
-    // GET: ดึงรายละเอียดงาน
-    // -----------------------------------------------------------
-    async function fetchJobDetails(jobOrder) {
-        const url = `${APP_SCRIPT_URL}?action=getJobDetails&job=${encodeURIComponent(jobOrder)}`;
-        try {
-            const response = await fetch(url);
-            const data = await handleResponse(response);
-
-            if (data.error) {
-                alert(`ไม่พบข้อมูลรายละเอียดงานสำหรับ Job ${jobOrder}`);
-                return null;
-            }
-            return data;
-        } catch (error) {
-            console.error('Error fetching job details:', error);
-            alert('❌ เกิดข้อผิดพลาดในการเชื่อมต่อเพื่อดึงรายละเอียดงาน');
-            return null;
-        }
-    }
-
-    jobOrderInput.addEventListener('change', async (event) => {
-        const selectedJob = event.target.value;
-        workCodeInput.value = '';
-        requiredQtyInput.value = '';
-        operInput.value = '';
-        productionStepSelect.innerHTML = '<option value="">-- กรุณาเลือกขั้นตอน --</option>'; 
-
-        if (!selectedJob) return;
-
-        const details = await fetchJobDetails(selectedJob);
-        if (details) {
-            workCodeInput.value = details.workCode || '';
-            // ❌ ไม่ใส่ requiredQty ตรงนี้แล้ว ให้ไปใส่ตอนเลือก Step
-            if (details.steps && details.steps.length > 0) {
-                details.steps.forEach(step => {
-                    const option = document.createElement('option');
-                    option.value = step;
-                    option.textContent = step;
-                    productionStepSelect.appendChild(option);
-                });
-            }
-        }
-    });
-
-    // -----------------------------------------------------------
-    // GET: ดึง Oper
-    // -----------------------------------------------------------
-    async function fetchOper(jobOrder, step) {
-        const url = `${APP_SCRIPT_URL}?action=getOper&job=${encodeURIComponent(jobOrder)}&step=${encodeURIComponent(step)}`;
-        try {
-            const response = await fetch(url);
-            const data = await handleResponse(response);
-            return data.oper || 'N/A';
-        } catch (error) {
-            console.error('Error fetching Oper:', error);
-            return 'N/A';
-        }
-    }
-
-    // -----------------------------------------------------------
-    // GET: ดึงจำนวนที่ต้องผลิต (ตามเงื่อนไข RP → PDT)
-    // -----------------------------------------------------------
-    async function fetchProductionQty(jobOrder, step) {
-        const url = `${APP_SCRIPT_URL}?action=getProductionQty&job=${encodeURIComponent(jobOrder)}&step=${encodeURIComponent(step)}`;
-        try {
-            const response = await fetch(url);
-            const data = await handleResponse(response);
-            return data.qty || 0;
-        } catch (error) {
-            console.error('Error fetching ProductionQty:', error);
-            return 0;
-        }
-    }
-
-    productionStepSelect.addEventListener('change', async (event) => {
-        const selectedJob = jobOrderInput.value;
-        const selectedStep = event.target.value;
-        operInput.value = '';
-        requiredQtyInput.value = '';
-
-        if (!selectedJob || !selectedStep) return;
-
-        // ดึง Oper
-        operInput.value = await fetchOper(selectedJob, selectedStep);
-
-        // ดึงจำนวนที่ต้องผลิตตามเงื่อนไขใหม่
-        requiredQtyInput.value = await fetchProductionQty(selectedJob, selectedStep);
-    });
-
-    // -----------------------------------------------------------
-    // POST: บันทึกข้อมูล
-    // -----------------------------------------------------------
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        showStatus('กำลังบันทึกข้อมูล...', 'blue');
-
-        const data = {
-            jobOrder: jobOrderInput.value || '',
-            workCode: workCodeInput.value || '',
-            requiredQty: Number(requiredQtyInput.value) || 0,
-            productionStep: productionStepSelect.value || '',
-            machineUsed: machineUsedInput.value || '',
-            oper: operInput.value || '',
-            staffCode: ''
-        };
-
-        console.log('Data ที่จะส่งไป:', data);
-
-        google.script.run
-            .withSuccessHandler(function(response) {
-                if (response.result === 'success') {
-                    showStatus('✅ บันทึกข้อมูลเรียบร้อยแล้ว!', 'green');
-                    alert('✅ บันทึกข้อมูลเรียบร้อยแล้ว!');
-                    form.reset();
-                    loadJobOrders();
-                } else {
-                    showStatus(`❌ เกิดข้อผิดพลาดในการบันทึก: ${response.message}`, 'red');
-                    alert(`❌ เกิดข้อผิดพลาดในการบันทึก: ${response.message}`);
+            const html5QrCode = new Html5Qrcode("scannerMachine");
+            html5QrCode.start(
+                { facingMode: "environment" }, // ใช้กล้องหลัง
+                { fps: 10, qrbox: 250 },
+                (decodedText, decodedResult) => {
+                    document.getElementById("machineUsed").value = decodedText.trim();
+                    html5QrCode.stop();
+                    scannerDiv.style.display = "none";
+                },
+                (errorMessage) => {
+                    console.log("Scanning error:", errorMessage);
                 }
-            })
-            .withFailureHandler(function(error) {
-                console.error('Apps Script Run Failure:', error);
-                showStatus(`❌ การส่งข้อมูลล้มเหลว (Apps Script Error): ${error.message}`, 'red');
-                alert(`❌ การส่งข้อมูลล้มเหลว (Apps Script Error): ${error.message}`);
-            })
-            .recordData(data);
-    });
+            ).catch(err => {
+                alert("❌ ไม่สามารถเปิดกล้องได้: " + err);
+            });
+        });
 
-    document.addEventListener('DOMContentLoaded', loadJobOrders);
-</script>
+        // 2. สแกนเลขที่จ๊อบ (Job Order)
+        document.getElementById("scanJobBtn").addEventListener("click", function() {
+            const scannerDiv = document.getElementById("scannerJob");
+            scannerDiv.style.display = "block";
+
+            const html5QrCode = new Html5Qrcode("scannerJob");
+            html5QrCode.start(
+                { facingMode: "environment" },    // ใช้กล้องหลัง
+                { fps: 10, qrbox: 250 },
+                (decodedText) => {
+                    // ดึงค่า Job No ส่วนแรก และ Trim ช่องว่าง
+                    const jobNo = decodedText.split("||")[0].trim(); 
+                    
+                    // ใส่ค่าในช่อง jobOrder
+                    jobOrderInput.value = jobNo;
+
+                    // Trigger event 'change' เพื่อดึงรายละเอียดงานต่อ
+                    triggerChangeEvent(jobOrderInput); 
+
+                    // ปิดกล้องหลังสแกนเสร็จ
+                    html5QrCode.stop();
+                    scannerDiv.style.display = "none";
+                },
+                (errorMessage) => {
+                    console.log("Scanning error:", errorMessage);
+                }
+            ).catch(err => {
+                alert("❌ ไม่สามารถเปิดกล้องได้: " + err);
+            });
+        });
+
+        // ===========================================================
+        // ส่วนของการสื่อสารกับ Apps Script (ใช้ google.script.run)
+        // ===========================================================
+
+        // -----------------------------------------------------------
+        // GET: โหลด Job Orders (ใช้ google.script.run)
+        // -----------------------------------------------------------
+        function loadJobOrders() {
+            showStatus('กำลังโหลด Job Orders...', 'blue');
+            google.script.run
+                .withSuccessHandler(function(data) {
+                    if (data.error || !data.jobs) {
+                        console.error('Apps Script Error:', data.error);
+                        showStatus('❌ ไม่สามารถโหลด Job Orders ได้', 'red');
+                        return;
+                    }
+                    
+                    jobOrdersDatalist.innerHTML = '';
+                    data.jobs.forEach(job => {
+                        const option = document.createElement('option');
+                        option.value = job;
+                        jobOrdersDatalist.appendChild(option);
+                    });
+                    showStatus('Job Orders โหลดสมบูรณ์', 'initial');
+                })
+                .withFailureHandler(function(error) {
+                    console.error('Apps Script Run Failure:', error);
+                    showStatus('❌ การเชื่อมต่อล้มเหลว (Apps Script Error)', 'red');
+                })
+                .getJobOrders();
+        }
+
+        // -----------------------------------------------------------
+        // GET: ดึงรายละเอียดงานและขั้นตอน (ใช้ google.script.run)
+        // -----------------------------------------------------------
+        function fetchJobDetails(jobOrder) {
+            return new Promise((resolve, reject) => {
+                google.script.run
+                    .withSuccessHandler(function(data) {
+                        if (data.error) {
+                            alert(`ไม่พบข้อมูลรายละเอียดงานสำหรับ Job ${jobOrder}`);
+                            resolve(null);
+                        } else {
+                            resolve(data);
+                        }
+                    })
+                    .withFailureHandler(function(error) {
+                        console.error('Error fetching job details:', error);
+                        alert('❌ เกิดข้อผิดพลาดในการเชื่อมต่อเพื่อดึงรายละเอียดงาน');
+                        resolve(null);
+                    })
+                    .getJobDetails(jobOrder);
+            });
+        }
+
+        // -----------------------------------------------------------
+        // GET: ดึง Oper (ใช้ google.script.run)
+        // -----------------------------------------------------------
+        function fetchOper(jobOrder, step) {
+            return new Promise((resolve, reject) => {
+                google.script.run
+                    .withSuccessHandler(function(data) {
+                        resolve(data.oper || 'N/A');
+                    })
+                    .withFailureHandler(function(error) {
+                        console.error('Error fetching Oper:', error);
+                        resolve('N/A');
+                    })
+                    .getOper(jobOrder, step);
+            });
+        }
+
+        // -----------------------------------------------------------
+        // GET: ดึงจำนวนที่ต้องผลิต (ใช้ google.script.run)
+        // -----------------------------------------------------------
+        function fetchProductionQty(jobOrder, step) {
+            return new Promise((resolve, reject) => {
+                google.script.run
+                    .withSuccessHandler(function(data) {
+                        resolve(data.qty || 0);
+                    })
+                    .withFailureHandler(function(error) {
+                        console.error('Error fetching ProductionQty:', error);
+                        resolve(0);
+                    })
+                    .getProductionQty(jobOrder, step);
+            });
+        }
+
+        // ===========================================================
+        // Event Listeners
+        // ===========================================================
+
+        // Event: เมื่อเลขที่จ๊อบมีการเปลี่ยนแปลง
+        jobOrderInput.addEventListener('change', async (event) => {
+            const selectedJob = event.target.value;
+            // Clear fields
+            workCodeInput.value = '';
+            requiredQtyInput.value = '';
+            operInput.value = '';
+            productionStepSelect.innerHTML = '<option value="">-- กรุณาเลือกขั้นตอน --</option>';    
+
+            if (!selectedJob) return;
+
+            const details = await fetchJobDetails(selectedJob);
+            if (details) {
+                workCodeInput.value = details.workCode || '';
+                
+                if (details.steps && details.steps.length > 0) {
+                    details.steps.forEach(step => {
+                        const option = document.createElement('option');
+                        option.value = step;
+                        option.textContent = step;
+                        productionStepSelect.appendChild(option);
+                    });
+                }
+            }
+        });
+
+        // Event: เมื่อขั้นตอนการทำงานมีการเปลี่ยนแปลง
+        productionStepSelect.addEventListener('change', async (event) => {
+            const selectedJob = jobOrderInput.value;
+            const selectedStep = event.target.value;
+            operInput.value = '';
+            requiredQtyInput.value = '';
+
+            if (!selectedJob || !selectedStep) return;
+
+            // ดึง Oper และจำนวนที่ต้องผลิตพร้อมกัน
+            const [oper, qty] = await Promise.all([
+                fetchOper(selectedJob, selectedStep),
+                fetchProductionQty(selectedJob, selectedStep)
+            ]);
+
+            operInput.value = oper;
+            requiredQtyInput.value = qty;
+        });
+
+        // Event: เมื่อกดบันทึกข้อมูล (POST)
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            showStatus('กำลังบันทึกข้อมูล...', 'blue');
+
+            const data = {
+                jobOrder: jobOrderInput.value || '',
+                workCode: workCodeInput.value || '',
+                requiredQty: Number(requiredQtyInput.value) || 0,
+                productionStep: productionStepSelect.value || '',
+                machineUsed: machineUsedInput.value || '',
+                oper: operInput.value || '',
+                staffCode: ''
+            };
+
+            console.log('Data ที่จะส่งไป:', data);
+
+            google.script.run
+                .withSuccessHandler(function(response) {
+                    if (response.result === 'success') {
+                        showStatus('✅ บันทึกข้อมูลเรียบร้อยแล้ว!', 'green');
+                        alert('✅ บันทึกข้อมูลเรียบร้อยแล้ว!');
+                        form.reset();
+                        loadJobOrders(); // โหลดรายการ Job ใหม่หลังจากบันทึก
+                    } else {
+                        showStatus(`❌ เกิดข้อผิดพลาดในการบันทึก: ${response.message}`, 'red');
+                        alert(`❌ เกิดข้อผิดพลาดในการบันทึก: ${response.message}`);
+                    }
+                })
+                .withFailureHandler(function(error) {
+                    console.error('Apps Script Run Failure:', error);
+                    showStatus(`❌ การส่งข้อมูลล้มเหลว (Apps Script Error): ${error.message}`, 'red');
+                    alert(`❌ การส่งข้อมูลล้มเหลว (Apps Script Error): ${error.message}`);
+                })
+                .recordData(data); // ต้องมีฟังก์ชัน recordData(data) ในฝั่ง Apps Script
+        });
+
+        // โหลด Job Orders เมื่อหน้าจอโหลดเสร็จ
+        document.addEventListener('DOMContentLoaded', loadJobOrders);
+    </script>
 
 
 </body>
